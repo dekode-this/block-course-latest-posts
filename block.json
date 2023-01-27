@@ -1,14 +1,19 @@
 {
 	"apiVersion": 2,
-	"name": "create-block/boilerplate",
-	"title": "Boilerplate",
+	"name": "blocks-course/latest-posts",
+	"title": "Latest Posts",
 	"category": "widgets",
-	"icon": "smiley",
-	"description": "Example block written with ESNext standard and JSX support – build step required.",
+	"icon": "admin-post",
+	"description": "Display and filter latest posts.",
+	"keywords": [
+		"posts",
+		"latest posts",
+		"recent posts"
+	],
 	"supports": {
 		"html": false
 	},
-	"textdomain": "boilerplate",
+	"textdomain": "latest-posts",
 	"editorScript": "file:./build/index.js",
 	"editorStyle": "file:./build/index.css",
 	"style": "file:./build/style-index.css"
