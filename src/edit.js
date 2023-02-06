@@ -1,5 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { RawHTML } from '@wordpress/element';
+// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 import { format, dateI18n, __experimentalGetSettings } from '@wordpress/date';
 import { useEffect, useState, useRef } from '@wordpress/element';
 import {
@@ -18,6 +19,8 @@ import {
 	withNotices,
 	ToolbarButton,
 	PanelBody,
+	ToggleControl,
+	QueryControls,
 	TextareaControl,
 	SelectControl,
 	Icon,
@@ -28,15 +31,17 @@ import {
 import './editor.scss';
 
 export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, isSelected }) {
-	const { id, url, alt, numberOfPosts } = attributes;
+	const { id, url, alt, numberOfPosts, displayFeaturedImage, order, orderBy } = attributes;
 
 	const posts = useSelect((select) => {
-		return select('core').getEntityRecords('postType', 'post', {
+		return select('core').getEntityRecords('postType', 'post', { // we are using the core store and we are using the getEntityRecords function.
 			per_page: numberOfPosts,
-			_embed: true
+			_embed: true,
+			order,
+			orderby: orderBy,
 		});
-	}, [numberOfPosts]); //When the number of posts changes we want to update the posts array. So we pass the numberOfPosts as the second arrgument to useSelect.
-	console.log(posts);
+	}, [numberOfPosts, order, orderBy]); //When the number of posts changes we want to update the posts array. So we pass the numberOfPosts as the second arrgument to useSelect.
+
 	const [blobURL, setBlobURL] = useState(); // the second arrgument is the setter for the state, The useState() function is left with an empty argument to set it as underfined to beggin.
 	const prevURL = usePrevious(url);
 	const prevIsSelected = usePrevious(isSelected); // this is how we get the previous value of 'isSelected'
@@ -138,18 +143,40 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 		})
 	};
 
+	const onDisplayFeaturedImageChange = (value) => {
+		setAttributes({ displayFeaturedImage: value });
+	}
+
+	const onNumberOfItemsChange = (value) => {
+		setAttributes({ numberOfPosts: value });
+	}
+
 	return (
 		<>
 			<InspectorControls>
 				<PanelBody>
+					<ToggleControl label={__("Display Featired Image", "latest-posts")}
+						checked={displayFeaturedImage} // this is the state of the toggle control. If it is true then the toggle control will be checked.
+						onChange={onDisplayFeaturedImageChange} // this is the function that will run when the toggle control is clicked. It will toggle the state of the toggle control.
+					/>
+					<QueryControls
+						numberOfItems={numberOfPosts}
+						onNumberOfItemsChange={onNumberOfItemsChange}
+						maxItems={10}
+						minItems={1}
+						orderBy="orderBy"
+						onOrderByChange={(value) => setAttributes({ orderBy: value })} // inline function to set the order by attribute to the value of the select menu
+						order="order"
+						onOrderChange={(value) => setAttributes({ order: value })} // inline function to set the order attribute to the value of the select menu
+					/>
 					{url && !isBlobURL(url) && ( //if url of the image is true and it is not a blobURL then display the Alt Text box
 						<TextareaControl
-							label={__('Alt Text', 'team-merbers')}
+							label={__('Alt Text', 'latest-posts')}
 							value={alt}
 							onChange={onChangeAlt}
 							help={__(
 								"Alternative text describes your image to people can't see it. Add a short description with its key details.",
-								'team-members'
+								'latest-posts'
 							)}
 						/>
 					)}
@@ -158,7 +185,7 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 			{url && ( // if there is an image (if url is true) display the block controls else don't
 				<BlockControls group="inline">
 					<MediaReplaceFlow
-						name={__("Replace Image", "team-members")}
+						name={__("Replace Image", "latest-posts")}
 						onSelect={onSelectImage} // this handles both upload and insert from media library
 						onSelectURL={onSelectURL}
 						onError={onUploadError}
@@ -168,31 +195,55 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 						mediaURL={url}
 					/>
 					<ToolbarButton onClick={removeImage}>
-						{__("Remove Image", "team-members")}
+						{__("Remove Image", "latest-posts")}
 					</ToolbarButton>
 				</BlockControls>
 			)}
 			<ul {...useBlockProps()}>
-				{posts && posts.map((posts) => { // this is where we loop through the posts and display them if posts returns true. .map() is a built in array method that loops through an array and returns a new array with the same number of items.
-					return (
-						<li key={posts.id}> {/* this is the key prop that react needs to know which item in the array is which. It needs to be unique so we use the post id. If you run wp.select('core').getEntityRecords('postType', 'post', { per_page: numberOfPosts, _embed: true }); in the console this is where you get post.id from, it's the REST API */}
-							<h5>
-								<a href={posts.link}>
-									<RawHTML>{posts.title.rendered ? posts.title.rendered : __('No title', 'latest-posts')}</RawHTML>
-								</a> {/* again these are from the REST API, you can see them in the console when you run the above code */}
-							</h5>
-							{posts.date_gmt && (
-								<time
-									dateTime={format('c', posts.date_gmt)}>
-									{dateI18n(__experimentalGetSettings().formats.date, posts.date_gmt)}
-								</time>
-							)}
-							{posts.excerpt.rendered &&
-								<RawHTML>{posts.excerpt.rendered}</RawHTML>
-							}
-						</li>
-					)
-				})}
+				{posts &&
+					posts.map((post) => { // this is where we loop through the posts and display them if posts returns true. .map() is a built in array method that loops through an array and returns a new array with the same number of items.
+						const featuredImage =
+							post._embedded &&
+							post._embedded['wp:featuredmedia'] &&
+							post._embedded['wp:featuredmedia'].length > 0 &&
+							post._embedded['wp:featuredmedia'][0];
+						return (
+							<li key={post.id}> {/* this is the key prop that react needs to know which item in the array is which. It needs to be unique so we use the post id. If you run wp.select('core').getEntityRecords('postType', 'post', { per_page: numberOfPosts, _embed: true }); in the console this is where you get post.id from, it's the REST API */}
+								{displayFeaturedImage && featuredImage && (
+									<img
+										src={
+											featuredImage.media_details.sizes
+												.large.source_url
+										}
+										alt={featuredImage.alt_text}
+									/>
+								)} {/* this is the featured image, if displayFeaturedImage is true then display the image, otherwise don't. The image is from the REST API, you can see it in the console when you run the above code */}
+								<h5>
+									<a href={post.link}>
+										{post.title.rendered ? (
+											<RawHTML>
+												{post.title.rendered}
+											</RawHTML>
+										) : (
+											__('(No title)', 'latest-posts')
+										)}
+									</a>
+								</h5>
+								{post.date_gmt && (
+									<time dateTime={format('c', post.date_gmt)}>
+										{dateI18n(
+											__experimentalGetSettings().formats
+												.date,
+											post.date_gmt
+										)}
+									</time>
+								)}
+								{post.excerpt.rendered && (
+									<RawHTML>{post.excerpt.rendered}</RawHTML>
+								)}
+							</li>
+						)
+					})}
 			</ul>
 			<div {...useBlockProps()}>
 				{__('Boilerplate – hello from the editor!', 'boilerplate')}
