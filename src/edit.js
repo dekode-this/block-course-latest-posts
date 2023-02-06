@@ -181,11 +181,14 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 									<RawHTML>{posts.title.rendered ? posts.title.rendered : __('No title', 'latest-posts')}</RawHTML>
 								</a> {/* again these are from the REST API, you can see them in the console when you run the above code */}
 							</h5>
-							{posts.date_gmt &&
+							{posts.date_gmt && (
 								<time
 									dateTime={format('c', posts.date_gmt)}>
 									{dateI18n(__experimentalGetSettings().formats.date, posts.date_gmt)}
 								</time>
+							)}
+							{posts.excerpt.rendered &&
+								<RawHTML>{posts.excerpt.rendered}</RawHTML>
 							}
 						</li>
 					)
