@@ -37,7 +37,12 @@ function blocks_course_render_latest_posts_block($attributes) {
 		$permalink = get_permalink($post); // will get the permalink of the post
 		$excerpt = get_the_excerpt($post); // will get the excerpt of the post // $post is an object, so we can access the properties of the object
 		//$posts .= '<li><a href="' . get_permalink($post->ID) . '">' . $post->post_title . '</a></li>';
+
 		$posts .= '<li>';
+		if($attributes["displayFeaturedImage"] && has_post_thumbnail( $post )) {
+			$posts .= get_the_post_thumbnail( $post, 'large' );
+		}
+		//$posts .= '<img src="' . esc_url($attributes['url']) . '" alt="' . esc_attr($attributes['url']) . '" />';
 		$posts .= '<h5><a href="' . esc_url($permalink) . '">' . $title . '</a></h5>';
 		$posts .= '<time datetime="' . esc_attr(get_the_date('c', $post)) . '">' . esc_html(get_the_date('', $post)) . '</time>'; // will get the date of the post // passing an empty string to get_the_date() will return the date in the format set in the WordPress settings
 		if(!empty($excerpt)) { // if the post has an excerpt, it will display it

@@ -18,13 +18,24 @@
 	"editorStyle": "file:./build/index.css",
 	"style": "file:./build/style-index.css",
 	"attributes": {
-		"number of posts": {
+		"numberOfPosts": {
 			"type": "number",
 			"default": 5
 		},
-		"displayFeaturedImages": {
+		"displayFeaturedImage": {
 			"type": "boolean",
-			"default": false
+			"default": true
+		},
+		"id": {
+			"type": "number"
+		},
+		"alt": {
+			"type": "string",
+			"default": ""
+		},
+		"url": {
+			"type": "string",
+			"default": ""
 		}
 	}
 }
