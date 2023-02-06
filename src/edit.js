@@ -1,5 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { RawHTML } from '@wordpress/element';
+import { format, dateI18n, __experimentalGetSettings } from '@wordpress/date';
 import { useEffect, useState, useRef } from '@wordpress/element';
 import {
 	useBlockProps,
@@ -177,9 +178,15 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 						<li key={posts.id}> {/* this is the key prop that react needs to know which item in the array is which. It needs to be unique so we use the post id. If you run wp.select('core').getEntityRecords('postType', 'post', { per_page: numberOfPosts, _embed: true }); in the console this is where you get post.id from, it's the REST API */}
 							<h5>
 								<a href={posts.link}>
-									<RawHTML>{posts.title.rendered ? posts.title.rendered : __('No title')}</RawHTML>
+									<RawHTML>{posts.title.rendered ? posts.title.rendered : __('No title', 'latest-posts')}</RawHTML>
 								</a> {/* again these are from the REST API, you can see them in the console when you run the above code */}
 							</h5>
+							{posts.date_gmt &&
+								<time
+									dateTime={format('c', posts.date_gmt)}>
+									{dateI18n(__experimentalGetSettings().formats.date, posts.date_gmt)}
+								</time>
+							}
 						</li>
 					)
 				})}
