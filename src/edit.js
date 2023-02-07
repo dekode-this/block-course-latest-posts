@@ -143,6 +143,11 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 		})
 	};
 
+	const allCats = useSelect((select) => { // useSelect allows us to access the store and get data from it. In this case we are getting all the categories from the store.
+		return select("core").getEntityRecords("taxonomy", "category", { per_page: -1 });
+	}, []); // allCats will never change so we pass an empty array as the second argument to useEffect.  
+
+
 	const onDisplayFeaturedImageChange = (value) => {
 		setAttributes({ displayFeaturedImage: value });
 	}
@@ -168,6 +173,9 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 						onOrderByChange={(value) => setAttributes({ orderBy: value })} // inline function to set the order by attribute to the value of the select menu
 						order="order"
 						onOrderChange={(value) => setAttributes({ order: value })} // inline function to set the order attribute to the value of the select menu
+						categoriesList={allCats} // this is the array of all the categories we got from the store using useSelect
+						selectedCategoryId={1}
+						onCategoryChange={(value) => { console.log(value) }}
 					/>
 					{url && !isBlobURL(url) && ( //if url of the image is true and it is not a blobURL then display the Alt Text box
 						<TextareaControl

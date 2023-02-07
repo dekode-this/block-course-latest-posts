@@ -200,6 +200,13 @@ function Edit(_ref) {
     });
   };
 
+  const allCats = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_4__.useSelect)(select => {
+    // useSelect allows us to access the store and get data from it. In this case we are getting all the categories from the store.
+    return select("core").getEntityRecords("taxonomy", "category", {
+      per_page: -1
+    });
+  }, []); // allCats will never change so we pass an empty array as the second argument to useEffect.  
+
   const onDisplayFeaturedImageChange = value => {
     setAttributes({
       displayFeaturedImage: value
@@ -232,7 +239,13 @@ function Edit(_ref) {
     onOrderChange: value => setAttributes({
       order: value
     }) // inline function to set the order attribute to the value of the select menu
-
+    ,
+    categoriesList: allCats // this is the array of all the categories we got from the store using useSelect
+    ,
+    selectedCategoryId: 1,
+    onCategoryChange: value => {
+      console.log(value);
+    }
   }), url && !(0,_wordpress_blob__WEBPACK_IMPORTED_MODULE_6__.isBlobURL)(url) && //if url of the image is true and it is not a blobURL then display the Alt Text box
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.TextareaControl, {
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Alt Text', 'latest-posts'),
