@@ -25,6 +25,8 @@ function blocks_course_render_latest_posts_block($attributes) {
 	$args = array (
 		'posts_per_page' => $attributes['numberOfPosts'], // will access the numberOfPosts attribute from the block.json file
 		'post_status' => 'publish', // will only show published posts
+		'order' => $attributes['order'], // will access the order attribute from the block.json file
+		'orderby' => $attributes['orderBy'], // will access the orderBy attribute from the block.json file
 	);
 	$recent_posts = get_posts($args);
 
