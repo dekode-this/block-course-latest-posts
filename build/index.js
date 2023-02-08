@@ -205,7 +205,38 @@ function Edit(_ref) {
     return select("core").getEntityRecords("taxonomy", "category", {
       per_page: -1
     });
-  }, []); // allCats will never change so we pass an empty array as the second argument to useEffect.  
+  }, []); // allCats will never change so we pass an empty array as the second argument to useEffect. 
+  //console.log(allCats)
+
+  const catSuggestions = {}; // set up an empty object to store the categories in
+
+  if (allCats) {
+    // if allCats is true, i.e. if there are categories in the store
+    for (let i = 0; i < allCats.length; i++) {
+      // loop through the categories and increment i by 1 each time
+      const cat = allCats[i]; // set cat to be the current category, this uses the index to access the category at each position in the allCats array
+      //console.log(cat) // becuase allCats is an array of objects we can access and we have accessed each object using it's index this will log each category as a separate object
+
+      catSuggestions[cat.name] = cat; // add the category name as a key and the category object as the value to the catSuggestions object
+
+      console.log(catSuggestions);
+    }
+  } // this will log an object with the category names as keys and the category objects as values
+  // how does the above function work?
+  // we are looping through the categories and adding the category name as a key and the category object as the value to the catSuggestions object.
+
+
+  const onCategoryChange = values => {
+    // values is an array of the selected categories
+    const hasNoSuggestions = values.some(value => typeof value === 'string' && !catSuggestions[value]); // check if the value typed has no suggestions. .some() will accept a callback function and will return true if any of the values in the array pass the test in the callback function. If true was returned for any iteration on the values array then hasNoSuggestions will be true. We use typeof to check if the value is a string and then we check if the value is not in the catSuggestions object.
+
+    if (hasNoSuggestions) return; // if hasNoSuggestions is true then return which will stop the function from running.
+
+    const updatedCats = values.map(token => {
+      // map through the values array and return a new array of updated categories
+      return typeof token === 'string' ? catSuggestions[token] : token; // if the token is a string then return the category object from the catSuggestions object. If the token is not a string then return the token.
+    }); //console.log(updatedCats);
+  };
 
   const onDisplayFeaturedImageChange = value => {
     setAttributes({
@@ -240,12 +271,10 @@ function Edit(_ref) {
       order: value
     }) // inline function to set the order attribute to the value of the select menu
     ,
-    categoriesList: allCats // this is the array of all the categories we got from the store using useSelect
+    categorySuggestions: catSuggestions // this is the object of categories we created above
     ,
-    selectedCategoryId: 1,
-    onCategoryChange: value => {
-      console.log(value);
-    }
+    selectedCategories: [],
+    onCategoryChange: onCategoryChange
   }), url && !(0,_wordpress_blob__WEBPACK_IMPORTED_MODULE_6__.isBlobURL)(url) && //if url of the image is true and it is not a blobURL then display the Alt Text box
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.TextareaControl, {
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Alt Text', 'latest-posts'),
