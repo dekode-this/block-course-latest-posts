@@ -60,16 +60,21 @@ function Edit(_ref) {
     order,
     orderBy,
     categories
-  } = attributes;
+  } = attributes; // categories is an array of category objects and needs to be converted into an array of category IDs. see function below.
+
+  const catIDs = categories && categories.length > 0 ? categories.map(cat => cat.id) : []; // we are mapping over the categories array and returning the ID of each category object. This is an array of category IDs. First we check if categories is true, then we use .length to check if the array has any items. If it does we map over the array and return the ID of each category object. If the array is empty we return an empty array.
+
   const posts = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_4__.useSelect)(select => {
     return select('core').getEntityRecords('postType', 'post', {
       // we are using the core store and we are using the getEntityRecords function.
       per_page: numberOfPosts,
       _embed: true,
       order,
-      orderby: orderBy
+      orderby: orderBy,
+      categories: catIDs // we are passing the categories attribute to the getEntityRecords function. This will filter the posts by category.
+
     });
-  }, [numberOfPosts, order, orderBy]); //When the number of posts changes we want to update the posts array. So we pass the numberOfPosts as the second arrgument to useSelect.
+  }, [numberOfPosts, order, orderBy, categories]); //When the number of posts changes we want to update the posts array. So we pass the numberOfPosts as the second arrgument to useSelect.
 
   const [blobURL, setBlobURL] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(); // the second arrgument is the setter for the state, The useState() function is left with an empty argument to set it as underfined to beggin.
 

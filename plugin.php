@@ -27,7 +27,13 @@ function blocks_course_render_latest_posts_block($attributes) {
 		'post_status' => 'publish', // will only show published posts
 		'order' => $attributes['order'], // will access the order attribute from the block.json file
 		'orderby' => $attributes['orderBy'], // will access the orderBy attribute from the block.json file
+		'category__in' => $attributes['categories'], // will access the categories attribute from the block.json file
 	);
+
+	if(isset($attributes['categories'])) { // categories is an array of objects and needs to be converted to an array of items, array_column() will do that for us in PHP
+		$args['category__in'] = array_column($attributes['categories'], 'id'); // array_colum() will return an array of the values of the specified column in the array of objects, the second parameter is the name of the column we want to return, this is similar to .map() in JavaScript
+	} // this conditional will check if the categories attribute is set, and if it is, it will add the categories attribute to the $args array
+
 	$recent_posts = get_posts($args);
 
 	//var_dump($recent_posts); // this will render the array of posts to the screen.
