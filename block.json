@@ -34,6 +34,12 @@
 			"type": "string",
 			"default": "date"
 		},
+		"categories": {
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
+		},
 		"id": {
 			"type": "number"
 		},

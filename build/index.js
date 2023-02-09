@@ -58,7 +58,8 @@ function Edit(_ref) {
     numberOfPosts,
     displayFeaturedImage,
     order,
-    orderBy
+    orderBy,
+    categories
   } = attributes;
   const posts = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_4__.useSelect)(select => {
     return select('core').getEntityRecords('postType', 'post', {
@@ -205,7 +206,7 @@ function Edit(_ref) {
     return select("core").getEntityRecords("taxonomy", "category", {
       per_page: -1
     });
-  }, []); // allCats will never change so we pass an empty array as the second argument to useEffect. 
+  }, []); // allCats will never change so we pass an empty array as the second argument to useSelect to prevent it from running on every render.
   //console.log(allCats)
 
   const catSuggestions = {}; // set up an empty object to store the categories in
@@ -218,8 +219,10 @@ function Edit(_ref) {
       //console.log(cat) // becuase allCats is an array of objects we can access and we have accessed each object using it's index this will log each category as a separate object
 
       catSuggestions[cat.name] = cat; // add the category name as a key and the category object as the value to the catSuggestions object
-
-      console.log(catSuggestions);
+      //console.log(catSuggestions) // will log an object with the category names as keys and the category objects as values
+      // why does the above console.log run every time I scroll? Because the for loop is running every time I scroll and the catSuggestions object is being updated each time.
+      // why does the for loop run every time I scroll? Because the allCats array is being updated each time I scroll.
+      // why is the allCats array being updated each time I scroll? Because the useSelect hook is running on every render. Why is the useSelect hook running on every render? Because we are not passing an empty array as the second argument to useSelect. We need to pass an empty array as the second argument to useSelect to prevent it from running on every render.
     }
   } // this will log an object with the category names as keys and the category objects as values
   // how does the above function work?
@@ -235,7 +238,10 @@ function Edit(_ref) {
     const updatedCats = values.map(token => {
       // map through the values array and return a new array of updated categories
       return typeof token === 'string' ? catSuggestions[token] : token; // if the token is a string then return the category object from the catSuggestions object. If the token is not a string then return the token.
-    }); //console.log(updatedCats);
+    });
+    setAttributes({
+      categories: updatedCats
+    }); // set the categories attribute to the updatedCats array
   };
 
   const onDisplayFeaturedImageChange = value => {
@@ -261,20 +267,22 @@ function Edit(_ref) {
     onNumberOfItemsChange: onNumberOfItemsChange,
     maxItems: 10,
     minItems: 1,
-    orderBy: "orderBy",
+    orderBy: orderBy,
     onOrderByChange: value => setAttributes({
       orderBy: value
     }) // inline function to set the order by attribute to the value of the select menu
     ,
-    order: "order",
+    order: order,
     onOrderChange: value => setAttributes({
       order: value
     }) // inline function to set the order attribute to the value of the select menu
     ,
     categorySuggestions: catSuggestions // this is the object of categories we created above
     ,
-    selectedCategories: [],
-    onCategoryChange: onCategoryChange
+    selectedCategories: categories // this is the array of selected categories that comes from the onCategoryChange function
+    ,
+    onCategoryChange: onCategoryChange,
+    values: categories
   }), url && !(0,_wordpress_blob__WEBPACK_IMPORTED_MODULE_6__.isBlobURL)(url) && //if url of the image is true and it is not a blobURL then display the Alt Text box
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.TextareaControl, {
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Alt Text', 'latest-posts'),

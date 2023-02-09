@@ -31,7 +31,7 @@ import {
 import './editor.scss';
 
 export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, isSelected }) {
-	const { id, url, alt, numberOfPosts, displayFeaturedImage, order, orderBy } = attributes;
+	const { id, url, alt, numberOfPosts, displayFeaturedImage, order, orderBy, categories } = attributes;
 
 	const posts = useSelect((select) => {
 		return select('core').getEntityRecords('postType', 'post', { // we are using the core store and we are using the getEntityRecords function.
@@ -144,8 +144,10 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 	};
 
 	const allCats = useSelect((select) => { // useSelect allows us to access the store and get data from it. In this case we are getting all the categories from the store.
-		return select("core").getEntityRecords("taxonomy", "category", { per_page: -1 });
-	}, []); // allCats will never change so we pass an empty array as the second argument to useEffect. 
+		return select("core").getEntityRecords("taxonomy", "category", {
+			per_page: -1,
+		});
+	}, []); // allCats will never change so we pass an empty array as the second argument to useSelect to prevent it from running on every render.
 
 	//console.log(allCats)
 
@@ -155,7 +157,10 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 			const cat = allCats[i]; // set cat to be the current category, this uses the index to access the category at each position in the allCats array
 			//console.log(cat) // becuase allCats is an array of objects we can access and we have accessed each object using it's index this will log each category as a separate object
 			catSuggestions[cat.name] = cat; // add the category name as a key and the category object as the value to the catSuggestions object
-			console.log(catSuggestions)
+			//console.log(catSuggestions) // will log an object with the category names as keys and the category objects as values
+			// why does the above console.log run every time I scroll? Because the for loop is running every time I scroll and the catSuggestions object is being updated each time.
+			// why does the for loop run every time I scroll? Because the allCats array is being updated each time I scroll.
+			// why is the allCats array being updated each time I scroll? Because the useSelect hook is running on every render. Why is the useSelect hook running on every render? Because we are not passing an empty array as the second argument to useSelect. We need to pass an empty array as the second argument to useSelect to prevent it from running on every render.
 		}
 	}
 
@@ -165,15 +170,17 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 	// we are looping through the categories and adding the category name as a key and the category object as the value to the catSuggestions object.
 
 	const onCategoryChange = (values) => { // values is an array of the selected categories
-		const hasNoSuggestions = values.some((value) => typeof value === 'string' && !catSuggestions[value]); // check if the value typed has no suggestions. .some() will accept a callback function and will return true if any of the values in the array pass the test in the callback function. If true was returned for any iteration on the values array then hasNoSuggestions will be true. We use typeof to check if the value is a string and then we check if the value is not in the catSuggestions object.
+		const hasNoSuggestions = values.some(
+			(value) => typeof value === 'string' && !catSuggestions[value]
+		); // check if the value typed has no suggestions. .some() will accept a callback function and will return true if any of the values in the array pass the test in the callback function. If true was returned for any iteration on the values array then hasNoSuggestions will be true. We use typeof to check if the value is a string and then we check if the value is not in the catSuggestions object.
 		if (hasNoSuggestions) return; // if hasNoSuggestions is true then return which will stop the function from running.
 
 		const updatedCats = values.map((token) => { // map through the values array and return a new array of updated categories
 			return typeof token === 'string' ? catSuggestions[token] : token; // if the token is a string then return the category object from the catSuggestions object. If the token is not a string then return the token.
 		});
 
-		//console.log(updatedCats);
-	}
+		setAttributes({ categories: updatedCats }); // set the categories attribute to the updatedCats array
+	};
 
 	const onDisplayFeaturedImageChange = (value) => {
 		setAttributes({ displayFeaturedImage: value });
@@ -196,15 +203,18 @@ export function Edit({ attributes, noticeUI, noticeOperations, setAttributes, is
 						onNumberOfItemsChange={onNumberOfItemsChange}
 						maxItems={10}
 						minItems={1}
-						orderBy="orderBy"
-						onOrderByChange={(value) => setAttributes({ orderBy: value })} // inline function to set the order by attribute to the value of the select menu
-						order="order"
-						onOrderChange={(value) => setAttributes({ order: value })} // inline function to set the order attribute to the value of the select menu
+						orderBy={orderBy}
+						onOrderByChange={(value) =>
+							setAttributes({ orderBy: value })
+						} // inline function to set the order by attribute to the value of the select menu
+						order={order}
+						onOrderChange={(value) =>
+							setAttributes({ order: value })
+						} // inline function to set the order attribute to the value of the select menu
 						categorySuggestions={catSuggestions} // this is the object of categories we created above
-						selectedCategories={[
-
-						]}
+						selectedCategories={categories} // this is the array of selected categories that comes from the onCategoryChange function
 						onCategoryChange={onCategoryChange}
+						values={categories}
 					/>
 					{url && !isBlobURL(url) && ( //if url of the image is true and it is not a blobURL then display the Alt Text box
 						<TextareaControl
